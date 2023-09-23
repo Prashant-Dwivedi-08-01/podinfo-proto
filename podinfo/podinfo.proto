@@ -13,6 +13,8 @@ service Greeter {
   rpc SayHi (HelloRequest) returns (HelloReply) {}
 
   rpc SayHiAgain (HelloRequest) returns (HelloReply) {}
+
+  rpc Version (VersionRequest) returns (VersionResponse) {}
 }
 
 // The request message containing the user's name.
@@ -23,4 +25,11 @@ message HelloRequest {
 // The response message containing the greetings
 message HelloReply {
   string message = 1;
+}
+
+message VersionRequest {}
+
+message VersionResponse {
+  string version = 1;
+  string commit = 2;
 }

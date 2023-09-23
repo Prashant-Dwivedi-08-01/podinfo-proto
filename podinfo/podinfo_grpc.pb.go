@@ -25,6 +25,7 @@ type GreeterClient interface {
 	// Sends a greeting
 	SayHi(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloReply, error)
 	SayHiAgain(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloReply, error)
+	Version(ctx context.Context, in *VersionRequest, opts ...grpc.CallOption) (*VersionResponse, error)
 }
 
 type greeterClient struct {
@@ -53,6 +54,15 @@ func (c *greeterClient) SayHiAgain(ctx context.Context, in *HelloRequest, opts .
 	return out, nil
 }
 
+func (c *greeterClient) Version(ctx context.Context, in *VersionRequest, opts ...grpc.CallOption) (*VersionResponse, error) {
+	out := new(VersionResponse)
+	err := c.cc.Invoke(ctx, "/helloworld.Greeter/Version", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // GreeterServer is the server API for Greeter service.
 // All implementations must embed UnimplementedGreeterServer
 // for forward compatibility
@@ -60,6 +70,7 @@ type GreeterServer interface {
 	// Sends a greeting
 	SayHi(context.Context, *HelloRequest) (*HelloReply, error)
 	SayHiAgain(context.Context, *HelloRequest) (*HelloReply, error)
+	Version(context.Context, *VersionRequest) (*VersionResponse, error)
 	mustEmbedUnimplementedGreeterServer()
 }
 
@@ -72,6 +83,9 @@ func (UnimplementedGreeterServer) SayHi(context.Context, *HelloRequest) (*HelloR
 }
 func (UnimplementedGreeterServer) SayHiAgain(context.Context, *HelloRequest) (*HelloReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SayHiAgain not implemented")
+}
+func (UnimplementedGreeterServer) Version(context.Context, *VersionRequest) (*VersionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Version not implemented")
 }
 func (UnimplementedGreeterServer) mustEmbedUnimplementedGreeterServer() {}
 
@@ -122,6 +136,24 @@ func _Greeter_SayHiAgain_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Greeter_Version_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VersionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GreeterServer).Version(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/helloworld.Greeter/Version",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GreeterServer).Version(ctx, req.(*VersionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Greeter_ServiceDesc is the grpc.ServiceDesc for Greeter service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -136,6 +168,10 @@ var Greeter_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SayHiAgain",
 			Handler:    _Greeter_SayHiAgain_Handler,
+		},
+		{
+			MethodName: "Version",
+			Handler:    _Greeter_Version_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
